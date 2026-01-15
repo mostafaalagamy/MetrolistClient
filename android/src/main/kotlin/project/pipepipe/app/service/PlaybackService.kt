@@ -29,6 +29,7 @@ import project.pipepipe.app.platform.getPlaybackStartPosition
 import project.pipepipe.app.platform.toMedia3MediaItem
 import project.pipepipe.app.platform.toPlatformMediaItem
 import project.pipepipe.app.platform.uuid
+import project.pipepipe.app.uistate.VideoDetailPageState
 import project.pipepipe.shared.infoitem.StreamInfo
 import project.pipepipe.shared.job.SupportedJobType
 import java.util.concurrent.ExecutorService
@@ -589,6 +590,11 @@ class PlaybackService : MediaLibraryService() {
 
     private fun applyPlaybackMode(mode: PlaybackMode) {
         val disableVideo = (mode == PlaybackMode.AUDIO_ONLY)
+        if (disableVideo && SharedContext.sharedVideoDetailViewModel.uiState.value.pageState == VideoDetailPageState.FULLSCREEN_PLAYER) {
+            // for unknown reason, sometimes switching from detail page -> fullscreen will cause video track disabled but playback mode still video_audio
+            // hopefully this check should prevent it.
+            return
+        }
         val params = player.trackSelectionParameters
             .buildUpon()
             .setTrackTypeDisabled(C.TRACK_TYPE_VIDEO, disableVideo)
@@ -611,43 +617,6 @@ class PlaybackService : MediaLibraryService() {
         )
     }
 
-    private fun refreshStreamAndRetry() {
-        val currentIndex = player.currentMediaItemIndex
-        val savedPosition = player.currentPosition
-        serviceScope.launch {
-            try {
-                // Get service ID from current media item
-                val currentItem = player.currentMediaItem ?: return@launch
-                val serviceId = currentItem.mediaMetadata.extras?.getInt("KEY_SERVICE_ID")
-                val uuid = currentItem.mediaMetadata.extras?.getString("KEY_UUID")
-
-                // Fetch fresh stream info
-                val streamInfo = withContext(Dispatchers.IO) {
-                    executeJobFlow(
-                        SupportedJobType.FETCH_INFO,
-                        currentItem.mediaId,
-                        serviceId
-                    ).info as StreamInfo
-                }
-
-                // Create new media item with fresh stream URLs
-                val newMediaItem = streamInfo.toMedia3MediaItem(uuid)
-
-                // Replace the media item at the current position
-                withContext(Dispatchers.Main) {
-                    player.removeMediaItem(currentIndex)
-                    player.addMediaItem(currentIndex, newMediaItem)
-
-                    // Seek to the saved position and try to play
-                    player.seekTo(currentIndex, savedPosition)
-                    player.prepare()
-                    player.play()
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
     private fun createPlayerListener(): Player.Listener {
         return object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
@@ -693,54 +662,6 @@ class PlaybackService : MediaLibraryService() {
                         task = "PLAY_STREAM",
                         errorCode = "PLAY_000"
                     )
-                }
-
-
-                if (error.cause?.message?.contains("403") == true
-                    || error.cause?.message?.contains("maybeThrowPlaylistRefreshError") == true) {
-                    val retryState = retryStates.getOrPut(mediaId) { RetryState() }
-
-                    // First phase: retry up to MAX_RETRIES_BEFORE_REFRESH times before refreshing
-                    if (!retryState.hasRefreshedStream && retryState.retryCount < MAX_RETRIES_BEFORE_REFRESH) {
-                        retryState.retryCount++
-                        ToastManager.show("403 error, retrying (${retryState.retryCount}/$MAX_RETRIES_BEFORE_REFRESH)...")
-
-                        // Simple retry - just prepare and play again
-                        player.prepare()
-                        player.play()
-                        return
-                    }
-
-                    // Second phase: refresh stream if we haven't done so yet
-                    if (!retryState.hasRefreshedStream) {
-                        retryState.hasRefreshedStream = true
-                        retryState.retryCount = 0
-                        ToastManager.show("Refreshing stream after $MAX_RETRIES_BEFORE_REFRESH retries...")
-
-                        refreshStreamAndRetry()
-                        return
-                    }
-
-                    // Third phase: retry up to MAX_RETRIES_AFTER_REFRESH more times after refresh
-                    if (retryState.retryCount < MAX_RETRIES_AFTER_REFRESH) {
-                        retryState.retryCount++
-                        ToastManager.show("403 error after refresh, retrying (${retryState.retryCount}/$MAX_RETRIES_AFTER_REFRESH)...")
-
-                        // Simple retry - just prepare and play again
-                        player.prepare()
-                        player.play()
-                        return
-                    }
-
-                    // Final phase: all retries exhausted, give up and skip to next
-                    ToastManager.show("Failed after all retries, skipping to next...")
-                    retryStates.remove(mediaId)
-                    SharedContext.queueManager.removeItemByUuid(player.currentMediaItem!!.uuid)
-                    if (player.mediaItemCount > 0) {
-                        player.prepare()
-                        player.play()
-                    }
-                    return
                 }
 
                 // Handle network-related errors: just pause, don't evict
