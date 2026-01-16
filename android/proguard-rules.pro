@@ -9,6 +9,7 @@
 -keepattributes Exceptions
 -keepattributes SourceFile,LineNumberTable
 -keepattributes RuntimeVisibleAnnotations
+-keepattributes EnclosingMethod
 
 # ============ Suppress Warnings ============
 -dontwarn io.micrometer.context.**
@@ -60,3 +61,9 @@
 
 -keep class org.apache.commons.compress.** { *; }
 -dontwarn org.apache.commons.compress.**
+
+# ============ Jackson TypeReference ============
+-keep class com.fasterxml.jackson.core.type.TypeReference { *; }
+-keep class * extends com.fasterxml.jackson.core.type.TypeReference { *; }
+-keep @com.fasterxml.jackson.annotation.JsonIgnoreProperties class ** { *; }
+-keep @com.fasterxml.jackson.annotation.JsonProperty class ** { *; }
