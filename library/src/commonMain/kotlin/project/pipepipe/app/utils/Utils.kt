@@ -18,3 +18,7 @@ fun generateQueryUrl(query: String, searchType: SearchType): String = buildStrin
         }
     }
 }
+
+fun printAll(vararg args: Any?) {
+    println(args.joinToString(" "))
+}
