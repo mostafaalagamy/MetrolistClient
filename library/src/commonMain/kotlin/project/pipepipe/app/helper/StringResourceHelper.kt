@@ -15,6 +15,8 @@ object StringResourceHelper {
             "songs" -> stringResource(MR.strings.songs)
             "albums" -> stringResource(MR.strings.albums)
             "artists" -> stringResource(MR.strings.artists)
+            "users" -> stringResource(MR.strings.users)
+            "tracks" -> stringResource(MR.strings.tracks)
             "playlist" -> stringResource(MR.strings.playlists)
             "playlists" -> stringResource(MR.strings.playlists)
             "channel" -> stringResource(MR.strings.channels)
