@@ -309,7 +309,7 @@ fun ChannelScreen(
                         gridState = liveGridState,
                         items = uiState.liveTab.itemList,
                         isLoading = uiState.common.isLoading,
-                        hasMore = uiState.liveTab.nextPageUrl != null,
+                        nextPageUrl = uiState.liveTab.nextPageUrl,
                         onLoadMore = { viewModel.loadLiveTabMoreItems(serviceId) },
                         getUrl = { it.url },
                         onItemClick = { item ->
@@ -328,7 +328,7 @@ fun ChannelScreen(
                         gridState = shortsGridState,
                         items = uiState.shortsTab.itemList,
                         isLoading = uiState.common.isLoading,
-                        hasMore = uiState.shortsTab.nextPageUrl != null,
+                        nextPageUrl = uiState.shortsTab.nextPageUrl,
                         onLoadMore = { viewModel.loadShortsTabMoreItems(serviceId) },
                         getUrl = { it.url },
                         onItemClick = { item ->
@@ -347,7 +347,7 @@ fun ChannelScreen(
                         gridState = videoGridState,
                         items = uiState.videoTab.itemList,
                         isLoading = uiState.common.isLoading,
-                        hasMore = uiState.videoTab.nextPageUrl != null,
+                        nextPageUrl = uiState.videoTab.nextPageUrl,
                         onLoadMore = { viewModel.loadMainTabMoreItems(serviceId) },
                         getUrl = { it.url },
                         onItemClick = { item ->
@@ -366,7 +366,7 @@ fun ChannelScreen(
                         gridState = remember { LazyGridState() },
                         items = uiState.playlistTab.itemList,
                         isLoading = uiState.common.isLoading,
-                        hasMore = uiState.playlistTab.nextPageUrl != null,
+                        nextPageUrl = uiState.playlistTab.nextPageUrl,
                         onLoadMore = { viewModel.loadPlaylistTabMoreItems(serviceId) },
                         getUrl = { it.url },
                         onItemClick = { item -> navController.navigate(
@@ -383,7 +383,7 @@ fun ChannelScreen(
                         gridState = remember { LazyGridState() },
                         items = uiState.albumTab.itemList,
                         isLoading = uiState.common.isLoading,
-                        hasMore = uiState.albumTab.nextPageUrl != null,
+                        nextPageUrl = uiState.albumTab.nextPageUrl,
                         onLoadMore = { viewModel.loadAlbumTabMoreItems(serviceId) },
                         getUrl = { it.url },
                         onItemClick = { item -> navController.navigate(
@@ -541,7 +541,7 @@ private fun <T: Info> TabContent(
     gridState: LazyGridState,
     items: List<T>,
     isLoading: Boolean,
-    hasMore: Boolean,
+    nextPageUrl: String?,
     onLoadMore: () -> Unit,
     getUrl: (T) -> String,
     onItemClick: (T) -> Unit,
@@ -552,32 +552,32 @@ private fun <T: Info> TabContent(
     val uniqueItems = remember(items) { items.distinctBy { getUrl(it) } }
     val loadMoreInvoker = rememberUpdatedState(onLoadMore)
 
-    LaunchedEffect(listState, gridState, hasMore, isLoading, uniqueItems) {
+    LaunchedEffect(listState, gridState, nextPageUrl,uniqueItems) {
         if (isGridEnabled) {
             snapshotFlow {
-                val layoutInfo = gridState.layoutInfo
-                val lastVisibleIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
-                val totalItemsCount = layoutInfo.totalItemsCount
-                lastVisibleIndex to totalItemsCount
+                val actualItems = gridState.layoutInfo.visibleItemsInfo.filter { it.key is String? }.map { it.key }
+                val lastVisible = actualItems.lastOrNull()
+                lastVisible to uniqueItems.lastOrNull()
             }
                 .distinctUntilChanged()
-                .collect { (lastVisibleIndex, totalItemsCount) ->
-                    val isAtBottom = totalItemsCount > 0 && lastVisibleIndex == totalItemsCount - 1
-                    if (isAtBottom && hasMore && !isLoading) {
+                .collect { (lastVisible, lastItem) ->
+                    val lastItemUrl = lastItem?.let { getUrl(it) }
+                    val isAtBottom = lastVisible == lastItemUrl
+                    if (isAtBottom && nextPageUrl != null && !isLoading) {
                         loadMoreInvoker.value.invoke()
                     }
                 }
         } else {
             snapshotFlow {
-                val layoutInfo = listState.layoutInfo
-                val lastVisibleIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
-                val totalItemsCount = layoutInfo.totalItemsCount
-                lastVisibleIndex to totalItemsCount
+                val actualItems = listState.layoutInfo.visibleItemsInfo.filter { it.key is String? }.map { it.key }
+                val lastVisible = actualItems.lastOrNull()
+                lastVisible to uniqueItems.lastOrNull()
             }
                 .distinctUntilChanged()
-                .collect { (lastVisibleIndex, totalItemsCount) ->
-                    val isAtBottom = totalItemsCount > 0 && lastVisibleIndex == totalItemsCount - 1
-                    if (isAtBottom && hasMore && !isLoading) {
+                .collect { (lastVisible, lastItem) ->
+                    val lastItemUrl = lastItem?.let { getUrl(it) }
+                    val isAtBottom = lastVisible == lastItemUrl
+                    if (isAtBottom && nextPageUrl != null && !isLoading) {
                         loadMoreInvoker.value.invoke()
                     }
                 }

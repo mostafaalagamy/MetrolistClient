@@ -99,27 +99,30 @@ fun PlaylistDetailScreen(
         }
     }
 
-    LaunchedEffect(listState, gridState, uiState.displayItems.size) {
+    LaunchedEffect(listState, gridState, uiState.list.nextPageUrl) {
         val isGridEnabled = SharedContext.settingsManager.getBoolean("grid_layout_enabled_key", false)
 
-        val lastVisibleIndexFlow = if (isGridEnabled) {
+        val lastVisibleKeyFlow = if (isGridEnabled) {
             snapshotFlow {
-                gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index
+                val actualItems = gridState.layoutInfo.visibleItemsInfo.filter { it.key is String? }.map { it.key }
+                actualItems.lastOrNull()
             }
         } else {
             snapshotFlow {
-                listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index
+                val actualItems = listState.layoutInfo.visibleItemsInfo.filter { it.key is String? }.map { it.key }
+                actualItems.lastOrNull()
             }
         }
 
-        lastVisibleIndexFlow.collect { lastVisibleIndex ->
-            if (lastVisibleIndex != null &&
+        lastVisibleKeyFlow.collect { lastVisibleKey ->
+            if (lastVisibleKey != null &&
                 uiState.playlistType in listOf(PlaylistType.REMOTE, PlaylistType.TRENDING) &&
                 !uiState.common.isLoading &&
                 uiState.list.nextPageUrl != null) {
 
-                val totalItems = uiState.displayItems.size
-                if (lastVisibleIndex >= totalItems - 5) {
+                val lastItem = uiState.displayItems.lastOrNull()
+                val lastItemKey = lastItem?.joinId ?: lastItem?.url
+                if (lastVisibleKey == lastItemKey) {
                     viewModel.loadRemotePlaylistMoreItems(serviceId!!)
                 }
             }

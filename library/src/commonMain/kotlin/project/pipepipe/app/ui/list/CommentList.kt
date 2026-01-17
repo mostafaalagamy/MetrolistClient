@@ -55,16 +55,16 @@ fun CommentList(
 ) {
     val uniqueItems = remember(comments) { comments.distinctBy { it.url } }
 
-    LaunchedEffect(listState, hasMoreComments, isLoading) {
+    LaunchedEffect(listState, hasMoreComments, uniqueItems) {
         snapshotFlow {
-            val layoutInfo = listState.layoutInfo
-            val lastVisibleIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
-            val totalItemsCount = layoutInfo.totalItemsCount
-            lastVisibleIndex to totalItemsCount
+            val actualItems = listState.layoutInfo.visibleItemsInfo.filter { it.key is String? }.map { it.key }
+            val lastVisible = actualItems.lastOrNull()
+            lastVisible to uniqueItems.lastOrNull()
         }
             .distinctUntilChanged()
-            .collect { (lastVisibleIndex, totalItemsCount) ->
-                val isAtBottom = totalItemsCount > 0 && lastVisibleIndex == totalItemsCount - 1
+            .collect { (lastVisible, lastItem) ->
+                val lastItemUrl = lastItem?.url
+                val isAtBottom = lastVisible == lastItemUrl
                 if (isAtBottom && hasMoreComments && !isLoading) {
                     onLoadMore()
                 }

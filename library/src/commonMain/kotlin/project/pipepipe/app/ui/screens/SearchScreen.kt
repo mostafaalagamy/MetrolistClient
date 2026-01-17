@@ -172,39 +172,37 @@ fun SearchScreen(
     }
 
     if (isGridLayout) {
-        LaunchedEffect(gridState, uiState.list.nextPageUrl, uiState.common.isLoading) {
+        LaunchedEffect(gridState, uiState.list.nextPageUrl) {
             snapshotFlow {
-                val layoutInfo = gridState.layoutInfo
-                val lastVisible = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
-                lastVisible to layoutInfo.totalItemsCount
+                val actualItems = gridState.layoutInfo.visibleItemsInfo.filter { it.key is String? }.map { it.key }
+                val lastVisible = actualItems.lastOrNull()
+                lastVisible to uiState.list.itemList.lastOrNull()
             }
                 .distinctUntilChanged()
-                .collect { (lastVisible, totalCount) ->
+                .collect { (lastVisible, lastItemInList) ->
                     val hasNextPage = uiState.list.nextPageUrl != null
                     val canLoadMore = !uiState.common.isLoading && hasNextPage
-                    val atBottom = totalCount > 0 && lastVisible == totalCount - 1
-
+                    val atBottom = lastVisible == lastItemInList?.url
                     if (canLoadMore && atBottom) {
-                        val serviceId = uniqueItems.firstOrNull()?.serviceId ?: return@collect
+                        val serviceId = lastItemInList!!.serviceId ?: return@collect
                         viewModel.loadMoreResults(serviceId)
                     }
                 }
         }
     } else {
-        LaunchedEffect(listState, uiState.list.nextPageUrl, uiState.common.isLoading) {
+        LaunchedEffect(listState) {
             snapshotFlow {
-                val layoutInfo = listState.layoutInfo
-                val lastVisible = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
-                lastVisible to layoutInfo.totalItemsCount
+                val actualItems = listState.layoutInfo.visibleItemsInfo.filter { it.key is String? }.map { it.key }
+                val lastVisible = actualItems.lastOrNull()
+                lastVisible to uiState.list.itemList.lastOrNull()
             }
                 .distinctUntilChanged()
-                .collect { (lastVisible, totalCount) ->
+                .collect { (lastVisible, lastItemInList) ->
                     val hasNextPage = uiState.list.nextPageUrl != null
                     val canLoadMore = !uiState.common.isLoading && hasNextPage
-                    val atBottom = totalCount > 0 && lastVisible == totalCount - 1
-
+                    val atBottom = lastVisible == lastItemInList?.url
                     if (canLoadMore && atBottom) {
-                        val serviceId = uniqueItems.firstOrNull()?.serviceId ?: return@collect
+                        val serviceId = lastItemInList!!.serviceId ?: return@collect
                         viewModel.loadMoreResults(serviceId)
                     }
                 }
