@@ -101,6 +101,9 @@ fun ChannelScreen(
     }
     val tabTypes = remember(tabs, hasDescription, filterShorts, showChannelTabsSettings) {
         val types = tabs.map { it.type }.toMutableList()
+        if (hasDescription) {
+            types.add(ChannelTabType.INFO)
+        }
 
         // Filter based on user preferences
         types.retainAll { tabType ->
@@ -117,9 +120,6 @@ fun ChannelScreen(
 
         if (filterShorts) {
             types.removeAll { it == ChannelTabType.SHORTS }
-        }
-        if (hasDescription) {
-            types.add(ChannelTabType.INFO)
         }
         types
     }
