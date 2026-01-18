@@ -144,7 +144,7 @@ object DatabaseOperations {
                 uploader = streamInfo.uploaderName ?: "Unknown",
                 uploader_url = streamInfo.uploaderUrl,
                 thumbnail_url = streamInfo.thumbnailUrl,
-                upload_date = streamInfo.uploadDate ?: 0,
+                upload_date = streamInfo.uploadDate,
                 is_paid = if (streamInfo.isPaid) 1L else 0L,
                 is_short = if (streamInfo.isShort) 1L else 0L,
                 url = streamInfo.url

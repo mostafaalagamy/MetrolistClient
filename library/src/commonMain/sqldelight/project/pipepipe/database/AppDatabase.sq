@@ -396,7 +396,7 @@ selectFeedStreams:
 SELECT s.* FROM streams s
 INNER JOIN feed f ON s.uid = f.stream_id
 INNER JOIN subscriptions sub ON f.subscription_id = sub.uid
-ORDER BY s.upload_date DESC;
+ORDER BY s.upload_date IS NULL DESC, s.upload_date DESC;
 
 insertFeedStream:
 INSERT OR IGNORE INTO feed (stream_id, subscription_id)
@@ -585,7 +585,7 @@ FROM streams s
 INNER JOIN feed f ON s.uid = f.stream_id
 INNER JOIN feed_group_subscription_join fgsj ON f.subscription_id = fgsj.subscription_id
 WHERE fgsj.group_id = ?
-ORDER BY s.upload_date DESC;
+ORDER BY s.upload_date IS NULL DESC, s.upload_date DESC;
 
 
 -- Feed last updated queries
