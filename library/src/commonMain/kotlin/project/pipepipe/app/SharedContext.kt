@@ -65,7 +65,7 @@ object SharedContext {
     // AutoplayNextManager for automatic queuing of next media item
    lateinit var autoplayNextManager: AutoplayNextManager
 
-    private val _playbackMode = MutableStateFlow(PlaybackMode.AUDIO_ONLY)
+    private val _playbackMode = MutableStateFlow(PlaybackMode.VIDEO_AUDIO)
     val playbackMode: StateFlow<PlaybackMode> = _playbackMode.asStateFlow()
 
     fun updatePlaybackMode(mode: PlaybackMode) {
