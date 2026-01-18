@@ -143,19 +143,11 @@ class VideoDetailViewModel()
         return true
     }
 
-    fun setPageState(pageState: VideoDetailPageState) {
-        setState { it.copy(pageState = pageState) }
-    }
-
     fun toggleFullscreenPlayer() {
-        setState {
-            it.copy(
-                pageState = if (it.pageState == VideoDetailPageState.FULLSCREEN_PLAYER) {
-                    VideoDetailPageState.DETAIL_PAGE
-                } else {
-                    VideoDetailPageState.FULLSCREEN_PLAYER
-                }
-            )
+        if (uiState.value.pageState == VideoDetailPageState.FULLSCREEN_PLAYER) {
+            showAsDetailPage()
+        } else {
+            showAsFullscreenPlayer()
         }
     }
 
@@ -174,6 +166,11 @@ class VideoDetailViewModel()
             controller.setStreamInfoAsOnlyMediaItem(streamInfo)
         }
     }
+
+    fun showAsFullscreenPlayer() {
+        setState { it.copy(pageState = VideoDetailPageState.FULLSCREEN_PLAYER) }
+    }
+
 
     fun showAsDetailPage() {
         setState { it.copy(pageState = VideoDetailPageState.DETAIL_PAGE) }

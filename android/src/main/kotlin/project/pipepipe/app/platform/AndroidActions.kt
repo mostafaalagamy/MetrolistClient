@@ -72,7 +72,7 @@ class AndroidActions(
             SharedContext.enterPipmode()
             SharedContext.platformMediaController?.setPlaybackMode(PlaybackMode.VIDEO_AUDIO)
             SharedContext.platformMediaController?.playFromStreamInfo(streamInfo)
-            SharedContext.sharedVideoDetailViewModel.setPageState(VideoDetailPageState.FULLSCREEN_PLAYER)
+            SharedContext.sharedVideoDetailViewModel.showAsFullscreenPlayer()
             activity.enterPipMode(streamInfo.isPortrait)
         }
     }

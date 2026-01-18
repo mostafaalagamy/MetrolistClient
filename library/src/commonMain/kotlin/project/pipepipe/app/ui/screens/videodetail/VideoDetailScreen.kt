@@ -191,12 +191,12 @@ fun VideoDetailScreen(modifier: Modifier, navController: NavHostController) {
             when (newOrientation) {
                 ScreenOrientation.LANDSCAPE if oldOrientation == ScreenOrientation.PORTRAIT &&
                         uiState.pageState != VideoDetailPageState.FULLSCREEN_PLAYER -> {
-                    viewModel.setPageState(VideoDetailPageState.FULLSCREEN_PLAYER)
+                    viewModel.showAsFullscreenPlayer()
                 }
 
                 ScreenOrientation.PORTRAIT if oldOrientation == ScreenOrientation.LANDSCAPE &&
                         uiState.pageState == VideoDetailPageState.FULLSCREEN_PLAYER -> {
-                    viewModel.setPageState(VideoDetailPageState.DETAIL_PAGE)
+                    viewModel.showAsDetailPage()
                 }
                 else -> {}
             }
