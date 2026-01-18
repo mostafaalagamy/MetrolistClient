@@ -34,6 +34,7 @@ fun StreamInfo.toPlatformMediaItem(uuid: String? = null): PlatformMediaItem {
             uuid?.let { put("KEY_UUID", it) }
             dashUrl?.let { put("KEY_DASH_URL", it) }
             hlsUrl?.let { put("KEY_HLS_URL", it) }
+            dashManifest?.let { put("KEY_DASH_MANIFEST", it) }
             headers.takeIf { it.isNotEmpty() }?.let { put("KEY_HEADER_MAP", it) }
             sponsorblockUrl?.let { put("KEY_SPONSORBLOCK_URL", it) }
             relatedItemUrl?.let { put("KEY_RELATED_ITEM_URL", it) }
