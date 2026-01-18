@@ -91,6 +91,7 @@ class CustomMediaSourceFactory() : MediaSource.Factory {
                 mediaSourceFactory = this,
             )
         }
+        GlobalScope.launch{ DatabaseOperations.directUpdateStreamHistoryByUrl(item.mediaId) }
         return createActualMediaSource(item, dashManifestString, dashUrl, hlsUrl, headers, sponsorblockUrl, relatedItemUrl)
     }
 

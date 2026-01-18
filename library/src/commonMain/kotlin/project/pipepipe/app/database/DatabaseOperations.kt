@@ -506,6 +506,15 @@ object DatabaseOperations {
         SharedContext.notifyHistoryChanged()
     }
 
+    suspend fun directUpdateStreamHistoryByUrl(url: String) = withContext(Dispatchers.IO) {
+        val watchHistoryMode = SharedContext.settingsManager.getString("watch_history_mode", "on_play")
+        if (watchHistoryMode == "disabled") return@withContext
+
+        val currentTime = System.currentTimeMillis()
+        updateStreamHistory(url, currentTime)
+        SharedContext.notifyHistoryChanged()
+    }
+
     suspend fun isSubscribed(url: String): Boolean = withContext(Dispatchers.IO) {
         database.appDatabaseQueries
             .selectAllSubscriptions()
