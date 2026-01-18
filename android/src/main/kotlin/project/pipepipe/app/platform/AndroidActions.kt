@@ -70,7 +70,7 @@ class AndroidActions(
         MainScope().launch {
             SharedContext.sharedVideoDetailViewModel.loadVideoDetails(streamInfo.url, streamInfo.serviceId)
             SharedContext.enterPipmode()
-            SharedContext.platformMediaController?.setPlaybackMode(PlaybackMode.VIDEO_AUDIO)
+            SharedContext.updatePlaybackMode(PlaybackMode.VIDEO_AUDIO)
             SharedContext.platformMediaController?.playFromStreamInfo(streamInfo)
             SharedContext.sharedVideoDetailViewModel.showAsFullscreenPlayer()
             activity.enterPipMode(streamInfo.isPortrait)

@@ -511,7 +511,7 @@ class MainActivity : ComponentActivity() {
             when (minimizeSetting) {
                 "minimize_on_exit_background_key" -> {
                     // Minimize to background player
-                    SharedContext.platformMediaController?.setPlaybackMode(PlaybackMode.AUDIO_ONLY)
+                    SharedContext.updatePlaybackMode(PlaybackMode.AUDIO_ONLY)
                 }
 
                 "minimize_on_exit_popup_key" -> {

@@ -125,18 +125,11 @@ class PlaybackService : MediaLibraryService() {
     }
 
     object CustomCommands {
-        const val ACTION_SET_PLAYBACK_MODE = "project.pipepipe.app.action.SET_PLAYBACK_MODE"
         const val ARG_MODE = "mode"
-
         const val ACTION_STOP_SERVICE = "project.pipepipe.app.action.STOP_SERVICE"
         val STOP_SERVICE_COMMAND = SessionCommand(ACTION_STOP_SERVICE, Bundle.EMPTY)
         const val ACTION_CHANGE_REPEAT_MODE = "project.pipepipe.app.action.CHANGE_REPEAT_MODE"
         val CHANGE_REPEAT_MODE_COMMAND = SessionCommand(ACTION_CHANGE_REPEAT_MODE, Bundle.EMPTY)
-
-        fun buildSetPlaybackModeCommand(mode: PlaybackMode): SessionCommand {
-            val args = Bundle().apply { putString(ARG_MODE, mode.name) }
-            return SessionCommand(ACTION_SET_PLAYBACK_MODE, args)
-        }
     }
 
     override fun onCreate() {
@@ -231,7 +224,6 @@ class PlaybackService : MediaLibraryService() {
             ): MediaSession.ConnectionResult {
                 // Use DEFAULT_SESSION_AND_LIBRARY_COMMANDS to allow library browsing (Android Auto)
                 val availableSessionCommands = MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS.buildUpon()
-                    .add(SessionCommand(CustomCommands.ACTION_SET_PLAYBACK_MODE, Bundle.EMPTY))
                     .add(CustomCommands.STOP_SERVICE_COMMAND)
                     .add(CustomCommands.CHANGE_REPEAT_MODE_COMMAND)
                     .build()
@@ -428,14 +420,6 @@ class PlaybackService : MediaLibraryService() {
             .setMediaButtonPreferences(mediaButtonPreferences)
             .build()
 
-        applyPlaybackMode(playbackMode.value)
-
-        // Monitor playbackMode changes
-        serviceScope.launch {
-            playbackMode.collect { mode ->
-                applyPlaybackMode(mode)
-            }
-        }
 
         // Monitor skip silence setting changes
         skipSilenceListener = SharedContext.settingsManager.addBooleanListener(
@@ -525,17 +509,6 @@ class PlaybackService : MediaLibraryService() {
         args: Bundle
     ): SessionResult {
         return when (command.customAction) {
-            CustomCommands.ACTION_SET_PLAYBACK_MODE -> {
-                val modeName = command.customExtras.getString(CustomCommands.ARG_MODE)
-                val mode = runCatching { PlaybackMode.valueOf(modeName ?: "") }.getOrNull()
-                if (mode != null) {
-                    SharedContext.updatePlaybackMode(mode)
-                    // applyPlaybackMode will be called automatically by the Flow collector
-                    SessionResult(SessionResult.RESULT_SUCCESS)
-                } else {
-                    SessionResult(SessionError.ERROR_BAD_VALUE)
-                }
-            }
             CustomCommands.ACTION_STOP_SERVICE -> {
                 saveCurrentProgress()
                 player.stop()
@@ -588,22 +561,7 @@ class PlaybackService : MediaLibraryService() {
         }
     }
 
-    private fun applyPlaybackMode(mode: PlaybackMode) {
-        val disableVideo = (mode == PlaybackMode.AUDIO_ONLY)
-        if (disableVideo && SharedContext.sharedVideoDetailViewModel.uiState.value.pageState == VideoDetailPageState.FULLSCREEN_PLAYER) {
-            // for unknown reason, sometimes switching from detail page -> fullscreen will cause video track disabled but playback mode still video_audio
-            // hopefully this check should prevent it.
-            return
-        }
-        val params = player.trackSelectionParameters
-            .buildUpon()
-            .setTrackTypeDisabled(C.TRACK_TYPE_VIDEO, disableVideo)
-            .build()
-        player.trackSelectionParameters = params
-        if (!disableVideo && player.currentMediaItem != null && player.isPlaying) {
-            player.seekTo(player.currentMediaItemIndex, player.currentPosition)
-        }
-    }
+
 
     private fun buildSessionActivity(): PendingIntent {
         val intent = Intent(this, Class.forName("project.pipepipe.app.MainActivity"))

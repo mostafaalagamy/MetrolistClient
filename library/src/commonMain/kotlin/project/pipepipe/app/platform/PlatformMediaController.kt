@@ -123,7 +123,7 @@ interface PlatformMediaController {
 
     fun release()
 
-    fun setPlaybackMode(mode: PlaybackMode)
+    fun applyPlaybackMode(mode: PlaybackMode)
 
     fun playFromStreamInfo(streamInfo: StreamInfo)
 
@@ -133,7 +133,7 @@ interface PlatformMediaController {
     }
 
     fun backgroundPlay(streamInfo: StreamInfo) {
-        setPlaybackMode(PlaybackMode.AUDIO_ONLY)
+        SharedContext.updatePlaybackMode(PlaybackMode.AUDIO_ONLY)
         playFromStreamInfo(streamInfo)
     }
 
@@ -149,7 +149,7 @@ interface PlatformMediaController {
 
     fun playAll(items: List<StreamInfo>, startIndex: Int, shuffle: Boolean) {
         MainScope().launch {
-            setPlaybackMode(PlaybackMode.AUDIO_ONLY)
+            SharedContext.updatePlaybackMode(PlaybackMode.AUDIO_ONLY)
             // Save items to database
             GlobalScope.launch {
                 items.forEach { item ->

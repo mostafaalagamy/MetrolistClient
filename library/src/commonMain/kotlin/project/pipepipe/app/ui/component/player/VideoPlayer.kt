@@ -421,7 +421,7 @@ fun VideoPlayer(
                 modifier = Modifier
                     .fillMaxSize()
                     .clickable {
-                        mediaController.setPlaybackMode(PlaybackMode.VIDEO_AUDIO)
+                        SharedContext.updatePlaybackMode(PlaybackMode.VIDEO_AUDIO)
                         mediaController.playFromStreamInfo(streamInfo)
                         if (SharedContext.settingsManager.getBoolean("start_main_player_fullscreen_key")) {
                             SharedContext.sharedVideoDetailViewModel.toggleFullscreenPlayer()

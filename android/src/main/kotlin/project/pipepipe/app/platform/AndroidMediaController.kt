@@ -285,11 +285,16 @@ class AndroidMediaController(
 
     // ===== Business Operations =====
 
-    override fun setPlaybackMode(mode: PlaybackMode) {
-        mediaController.sendCustomCommand(
-            PlaybackService.CustomCommands.buildSetPlaybackModeCommand(mode),
-            Bundle.EMPTY
-        )
+    override fun applyPlaybackMode(mode: PlaybackMode) {
+        val disableVideo = (mode == PlaybackMode.AUDIO_ONLY)
+        val params = mediaController.trackSelectionParameters
+            .buildUpon()
+            .setTrackTypeDisabled(C.TRACK_TYPE_VIDEO, disableVideo)
+            .build()
+        mediaController.trackSelectionParameters = params
+        if (!disableVideo && mediaController.currentMediaItem != null && mediaController.isPlaying) {
+            mediaController.seekTo(mediaController.currentMediaItemIndex, mediaController.currentPosition)
+        }
     }
 
     override fun setPlaybackParameters(speed: Float, pitch: Float) {

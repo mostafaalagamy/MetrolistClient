@@ -3,12 +3,15 @@ package project.pipepipe.app
 import androidx.navigation.NavHostController
 import com.fasterxml.jackson.databind.ObjectMapper
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import project.pipepipe.database.AppDatabase
@@ -69,7 +72,12 @@ object SharedContext {
     val playbackMode: StateFlow<PlaybackMode> = _playbackMode.asStateFlow()
 
     fun updatePlaybackMode(mode: PlaybackMode) {
-        _playbackMode.value = mode
+        runBlocking {
+            MainScope().launch {
+                platformMediaController!!.applyPlaybackMode(mode)
+                _playbackMode.value = mode
+            }
+        }
     }
 
     private val _playQueueVisibility = MutableStateFlow(false)

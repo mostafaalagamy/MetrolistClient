@@ -141,7 +141,7 @@ fun VideoDetailScreen(modifier: Modifier, navController: NavHostController) {
                 // Resume video playback
                 kotlinx.coroutines.delay(500) // don't use a small value, this will interfere the animation
                 controller?.let {
-                    controller.setPlaybackMode(PlaybackMode.VIDEO_AUDIO)
+                    SharedContext.updatePlaybackMode(PlaybackMode.VIDEO_AUDIO)
                     if (controller.currentMediaItem.value?.mediaId == streamInfo.url && controller.isPlaying.value) {
                         controller.playFromStreamInfo(streamInfo)
                     }
@@ -159,7 +159,7 @@ fun VideoDetailScreen(modifier: Modifier, navController: NavHostController) {
 
                 if (shouldAutoPlay) {
                     controller?.let {
-                        controller.setPlaybackMode(PlaybackMode.VIDEO_AUDIO)
+                        SharedContext.updatePlaybackMode(PlaybackMode.VIDEO_AUDIO)
                         if (controller.currentMediaItem.value?.mediaId != streamInfo.url) {
                             controller.playFromStreamInfo(streamInfo)
                         } else if (!controller.isPlaying.value) {
@@ -538,7 +538,7 @@ fun VideoDetailScreen(modifier: Modifier, navController: NavHostController) {
                                 item {
                                     ActionButtons(
                                         onPlayAudioClick = {
-                                            controller.setPlaybackMode(PlaybackMode.AUDIO_ONLY)
+                                            SharedContext.updatePlaybackMode(PlaybackMode.AUDIO_ONLY)
                                             if (controller.currentMediaItem.value?.mediaId != streamInfo.url) {
                                                 controller.playFromStreamInfo(streamInfo)
                                             } else if (!controller.isPlaying.value) {
