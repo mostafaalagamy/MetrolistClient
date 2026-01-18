@@ -440,6 +440,8 @@ class PlaylistDetailViewModel : BaseViewModel<PlaylistUiState>(PlaylistUiState()
             PlaylistSortMode.UPLOAD_TIME_DESCENDING -> uiState.value.list.itemList.sortedByDescending { it.uploadDate ?: Long.MIN_VALUE }
             PlaylistSortMode.DURATION_ASCENDING -> uiState.value.list.itemList.sortedBy { it.duration ?: Long.MAX_VALUE }
             PlaylistSortMode.DURATION_DESCENDING -> uiState.value.list.itemList.sortedByDescending { it.duration ?: Long.MIN_VALUE }
+            PlaylistSortMode.SORT_NAME -> uiState.value.list.itemList.sortedBy { it.name }
+            PlaylistSortMode.SORT_NAME_REVERSE -> uiState.value.list.itemList.sortedByDescending { it.name }
         }
     }
 
