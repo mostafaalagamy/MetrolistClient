@@ -83,10 +83,6 @@ fun PlaylistDetailScreen(
         viewModel.reorderItems(from.index - 1, to.index - 1)
     }
 
-    // Track first visible item key before refresh to restore scroll position
-    var firstVisibleItemKey by remember { mutableStateOf<String?>(null) }
-    var firstVisibleItemOffset by remember { mutableIntStateOf(0) }
-
     val feedWorkState by SharedContext.platformActions.feedWorkState.collectAsState()
 
     val shouldShowMoreMenuButton = !((uiState.playlistType == PlaylistType.FEED
@@ -136,28 +132,6 @@ fun PlaylistDetailScreen(
             }
             is FeedWorkState.Success, is FeedWorkState.Failed -> {
                 if (uiState.isRefreshing && uiState.playlistType == PlaylistType.FEED) {
-                    // Save current first visible item before refresh
-                    val isGridEnabled = SharedContext.settingsManager.getBoolean("grid_layout_enabled_key", false)
-                    val firstVisibleItemIndex = if (isGridEnabled) {
-                        gridState.firstVisibleItemIndex
-                    } else {
-                        listState.firstVisibleItemIndex
-                    }
-
-                    // Account for header items - find the first actual stream item
-                    val headerOffset = 2 // FeedRefreshHeader + PlaylistHeaderSection
-                    val actualItemIndex = (firstVisibleItemIndex - headerOffset).coerceAtLeast(0)
-
-                    if (actualItemIndex < uiState.displayItems.size) {
-                        val firstVisibleItem = uiState.displayItems[actualItemIndex]
-                        firstVisibleItemKey = firstVisibleItem.url
-                        firstVisibleItemOffset = if (isGridEnabled) {
-                            gridState.firstVisibleItemScrollOffset
-                        } else {
-                            listState.firstVisibleItemScrollOffset
-                        }
-                    }
-
                     viewModel.loadPlaylist(url, serviceId)
                     val feedId = url.substringAfterLast("/").substringBefore("?").toLong()
                     viewModel.updateFeedLastUpdated(feedId)
@@ -185,27 +159,6 @@ fun PlaylistDetailScreen(
         }
     }
 
-    // Restore scroll position after feed refresh
-    LaunchedEffect(uiState.displayItems.size, firstVisibleItemKey) {
-        if (firstVisibleItemKey != null && uiState.playlistType == PlaylistType.FEED) {
-            val newIndex = uiState.displayItems.indexOfFirst {
-                it.url == firstVisibleItemKey
-            }
-            if (newIndex >= 0) {
-                val isGridEnabled = SharedContext.settingsManager.getBoolean("grid_layout_enabled_key", false)
-                val headerOffset = 2 // FeedRefreshHeader + PlaylistHeaderSection
-                val targetIndex = newIndex + headerOffset
-
-                if (isGridEnabled) {
-                    gridState.scrollToItem(targetIndex, firstVisibleItemOffset)
-                } else {
-                    listState.scrollToItem(targetIndex, firstVisibleItemOffset)
-                }
-                // Clear the saved key after restoring
-                firstVisibleItemKey = null
-            }
-        }
-    }
 
     fun startPlayAll(index: Int = 0, shuffle: Boolean = false) {
         SharedContext.platformMediaController!!.playAll(viewModel.sortedItems, index, shuffle)
