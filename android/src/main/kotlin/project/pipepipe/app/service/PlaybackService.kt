@@ -565,7 +565,7 @@ class PlaybackService : MediaLibraryService() {
 
     private fun buildSessionActivity(): PendingIntent {
         val intent = Intent(this, Class.forName("project.pipepipe.app.MainActivity"))
-        intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
         intent.putExtra("open_play_queue", true)
         return PendingIntent.getActivity(
             this,

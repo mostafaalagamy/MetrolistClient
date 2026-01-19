@@ -49,8 +49,10 @@
             android:name="project.pipepipe.app.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.PipePipe"
-            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
-            android:supportsPictureInPicture="true">
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize|density|layoutDirection|uiMode"
+            android:resizeableActivity="true"
+            android:supportsPictureInPicture="true"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
