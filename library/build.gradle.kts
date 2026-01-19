@@ -83,10 +83,10 @@ kotlin {
                 implementation("androidx.core:core-ktx:1.17.0")
                 implementation("app.cash.sqldelight:android-driver:2.0.2")
                 implementation("app.cash.sqldelight:primitive-adapters:2.0.2")
-                implementation("androidx.media3:media3-session:1.8.0")
-                implementation("androidx.media3:media3-exoplayer:1.8.0")
-                implementation("androidx.media3:media3-ui:1.8.0")
-                implementation("androidx.media3:media3-common:1.8.0")
+                implementation("androidx.media3:media3-session:1.9.0")
+                implementation("androidx.media3:media3-exoplayer:1.9.0")
+                implementation("androidx.media3:media3-ui:1.9.0")
+                implementation("androidx.media3:media3-common:1.9.0")
             }
         }
     }
