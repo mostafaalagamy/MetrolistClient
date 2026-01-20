@@ -509,7 +509,6 @@ class MainActivity : ComponentActivity() {
 
 
     override fun onUserLeaveHint() {
-        println(777)
         super.onUserLeaveHint()
 
         val uiState = SharedContext.sharedVideoDetailViewModel.uiState.value
