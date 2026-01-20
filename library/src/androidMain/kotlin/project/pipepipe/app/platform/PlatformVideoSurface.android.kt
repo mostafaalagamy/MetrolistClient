@@ -12,6 +12,7 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@androidx.media3.common.util.UnstableApi
 @Composable
 actual fun PlatformVideoSurface(
     controller: PlatformMediaController,
