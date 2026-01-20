@@ -74,7 +74,7 @@ object SharedContext {
     fun updatePlaybackMode(mode: PlaybackMode) {
         runBlocking {
             MainScope().launch {
-                platformMediaController!!.applyPlaybackMode(mode)
+                platformMediaController?.applyPlaybackMode(mode)
                 _playbackMode.value = mode
             }
         }
