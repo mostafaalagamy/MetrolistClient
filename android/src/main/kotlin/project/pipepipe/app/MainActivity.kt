@@ -41,6 +41,7 @@ import project.pipepipe.app.platform.AndroidActions
 import project.pipepipe.app.platform.AndroidMediaController
 import project.pipepipe.app.platform.AndroidMenuItems
 import project.pipepipe.app.platform.AndroidRouteHandler
+import project.pipepipe.app.service.DownloadService
 import project.pipepipe.app.service.FeedUpdateManager
 import project.pipepipe.app.ui.component.*
 import project.pipepipe.app.ui.navigation.NavGraph
@@ -72,6 +73,7 @@ class MainActivity : ComponentActivity() {
         checkIntentForFeedFailures(intent)
         checkIntentForStreamsFailures(intent)
         checkIntentForChannelNavigation(intent)
+        checkIntentForDownload(intent)
         handleDeepLink(intent)
 
         setContentView(R.layout.activity_main)
@@ -325,6 +327,7 @@ class MainActivity : ComponentActivity() {
         checkIntentForFeedFailures(intent)
         checkIntentForStreamsFailures(intent)
         checkIntentForChannelNavigation(intent)
+        checkIntentForDownload(intent)
         handleDeepLink(intent)
     }
 
@@ -338,6 +341,18 @@ class MainActivity : ComponentActivity() {
                 intent.removeExtra("channel_url")
                 intent.removeExtra("service_id")
             }
+        }
+    }
+
+    private fun checkIntentForDownload(intent: Intent) {
+        if (intent.action == DownloadService.ACTION_OPEN_DOWNLOADS_FINISHED) {
+            if (SharedContext.sharedVideoDetailViewModel.uiState.value.pageState == VideoDetailPageState.DETAIL_PAGE) {
+                SharedContext.sharedVideoDetailViewModel.showAsBottomPlayer()
+            }
+            if (SharedContext.playQueueVisibility.value) {
+                SharedContext.toggleShowPlayQueueVisibility()
+            }
+            navController.navigate(Screen.Download.route)
         }
     }
 
@@ -494,6 +509,7 @@ class MainActivity : ComponentActivity() {
 
 
     override fun onUserLeaveHint() {
+        println(777)
         super.onUserLeaveHint()
 
         val uiState = SharedContext.sharedVideoDetailViewModel.uiState.value

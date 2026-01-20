@@ -15,6 +15,7 @@ import kotlinx.coroutines.runBlocking
 import project.pipepipe.app.MR
 import project.pipepipe.app.database.DatabaseOperations
 import dev.icerock.moko.resources.desc.desc
+import project.pipepipe.app.MainActivity
 
 /**
  * Foreground service for managing downloads
@@ -36,6 +37,7 @@ class DownloadService : Service() {
             .setSmallIcon(android.R.drawable.stat_sys_download)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setOngoing(true)
+            .setContentIntent(makePendingIntent(this, ACTION_OPEN_DOWNLOADS_FINISHED))
             .build()
         startForeground(FOREGROUND_NOTIFICATION_ID, notification)
         isForeground = true
@@ -100,6 +102,7 @@ class DownloadService : Service() {
                 .setSmallIcon(android.R.drawable.stat_sys_download)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setOngoing(true)
+                .setContentIntent(makePendingIntent(this, ACTION_OPEN_DOWNLOADS_FINISHED))
                 .build()
             startForeground(FOREGROUND_NOTIFICATION_ID, notification)
             isForeground = true
@@ -124,8 +127,8 @@ class DownloadService : Service() {
         private const val COMPLETION_NOTIFICATION_ID = 3002
         private const val ERROR_NOTIFICATION_BASE_ID = 3100
 
-        private const val ACTION_RESET_DOWNLOAD_FINISHED = "project.pipepipe.reset_download_finished"
-        private const val ACTION_OPEN_DOWNLOADS_FINISHED = "project.pipepipe.open_downloads_finished"
+        const val ACTION_RESET_DOWNLOAD_FINISHED = "project.pipepipe.reset_download_finished"
+        const val ACTION_OPEN_DOWNLOADS_FINISHED = "project.pipepipe.open_downloads_finished"
 
         private var instance: DownloadService? = null
 
@@ -177,13 +180,13 @@ class DownloadService : Service() {
         }
 
         private fun makePendingIntent(context: Context, action: String): PendingIntent {
-            val intent = Intent(context, DownloadService::class.java).setAction(action)
+            val intent = Intent(context, MainActivity::class.java).setAction(action)
             val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             } else {
                 PendingIntent.FLAG_UPDATE_CURRENT
             }
-            return PendingIntent.getService(context, action.hashCode(), intent, flags)
+            return PendingIntent.getActivity(context, action.hashCode(), intent, flags)
         }
     }
 }
