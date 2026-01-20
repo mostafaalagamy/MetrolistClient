@@ -32,6 +32,22 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("nightly") {
+            val keystoreFile = file(System.getenv("NIGHTLY_KEYSTORE_FILE") ?: "nightly.jks")
+            if (keystoreFile.exists()) {
+                storeFile = keystoreFile
+                storePassword = System.getenv("NIGHTLY_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("NIGHTLY_KEY_ALIAS")
+                keyPassword = System.getenv("NIGHTLY_KEY_PASSWORD")
+            } else {
+                // Fallback to debug signing if nightly keystore is missing
+                val debugKeystore = file(System.getProperty("user.home") + "/.android/debug.keystore")
+                storeFile = if (debugKeystore.exists()) debugKeystore else null
+            }
+        }
+    }
+
     splits {
         abi {
             reset()
@@ -46,11 +62,19 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            resValue("string", "app_name", "PipePipe Beta")
         }
         debug {
             isMinifyEnabled = false
             applicationIdSuffix = ".debug"
             isDebuggable = true
+            resValue("string", "app_name", "PipePipe Debug")
+        }
+        create("nightly") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".nightly"
+            resValue("string", "app_name", "PipePipe Nightly")
+            signingConfig = signingConfigs.getByName("nightly")
         }
     }
 
