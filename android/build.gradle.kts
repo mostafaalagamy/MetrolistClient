@@ -75,6 +75,7 @@ android {
             applicationIdSuffix = ".nightly"
             resValue("string", "app_name", "PipePipe Nightly")
             signingConfig = signingConfigs.getByName("nightly")
+            matchingFallbacks += listOf("release")
         }
     }
 
