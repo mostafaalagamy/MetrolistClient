@@ -330,7 +330,7 @@
 <string name="always">总是</string>
 <string name="minimize_on_exit_title">切换应用时最小化</string>
 <string name="minimize_on_exit_summary">从主视频播放器切换到其他应用程序时的操作 — %s</string>
-<string name="minimize_on_exit_none_description">无</string>
+
 <string name="minimize_on_exit_background_description">最小化到后台播放器</string>
 <string name="minimize_on_exit_popup_description">最小化到悬浮窗播放器</string>
 <string name="email">电子邮件</string>

@@ -86,7 +86,7 @@ fun PlayerSettingScreen(
         }
     }
 
-    val minimizeNone = stringResource(MR.strings.minimize_on_exit_none_description)
+    val minimizeNone = stringResource(MR.strings.pause)
     val minimizeBackground = stringResource(MR.strings.minimize_on_exit_background_description)
     val minimizePopup = stringResource(MR.strings.minimize_on_exit_popup_description)
 

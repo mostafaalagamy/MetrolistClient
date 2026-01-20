@@ -412,7 +412,7 @@
 <string name="always">Always</string>
 <string name="minimize_on_exit_title">Minimize on app switch</string>
 <string name="minimize_on_exit_summary">Action when switching to other app from main video player — %s</string>
-<string name="minimize_on_exit_none_description">None</string>
+
 <string name="minimize_on_exit_background_description">Minimize to background player</string>
 <string name="minimize_on_exit_popup_description">Minimize to popup player</string>
 <string name="settings_category_feed_title">Feed</string>
@@ -673,7 +673,6 @@
 <!-- Language settings -->
 <string name="settings_section_language">Language</string>
 <string name="app_language_title">App language</string>
-
 <string name="default_content_country_title">Preferred trending country</string>
 <string name="preferred_audio_language_title">Preferred audio language</string>
 <string name="preferred_caption_language_title">Preferred caption language</string>
@@ -715,8 +714,7 @@
 <string name="download_open_with">Open with</string>
 <string name="download_no_app_found">No app found to open this file</string>
 <string name="download_open_failed">Failed to open file</string>
-
-    <string name="download_completion_channel_name">Download Completion</string>
-    <string name="notification_downloads_in_progress">Download in progress…</string>
-    <string name="notification_download_count">%d download complete</string>
+<string name="download_completion_channel_name">Download Completion</string>
+<string name="notification_downloads_in_progress">Download in progress…</string>
+<string name="notification_download_count">%d download complete</string>
 </resources>
