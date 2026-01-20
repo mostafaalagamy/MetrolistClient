@@ -31,6 +31,25 @@ class VideoDetailViewModel()
         }
     }
 
+    private fun bringExistingEntryToTop(url: String): Boolean {
+        val existingIndex = uiState.value.streamInfoStack.indexOfFirst { it.streamInfo.url == url }
+        if (existingIndex != -1) {
+            val entry = uiState.value.streamInfoStack[existingIndex]
+            setState { state ->
+                val newStack = state.streamInfoStack.toMutableList().apply {
+                    removeAt(existingIndex)
+                    add(entry)
+                }
+                state.copy(
+                    streamInfoStack = newStack,
+                    common = state.common.copy(isLoading = false, error = null)
+                )
+            }
+            return true
+        }
+        return false
+    }
+
 
     fun loadVideoDetails(url: String, serviceId: Int? = null,
                          shouldDisableLoading: Boolean = false,
@@ -47,23 +66,11 @@ class VideoDetailViewModel()
                 SharedContext.updatePlaybackMode(PlaybackMode.AUDIO_ONLY)
             }
 
-            val existingIndex = uiState.value.streamInfoStack.indexOfFirst { it.streamInfo.url == url }
-            if (existingIndex != -1) {
-                val entry = uiState.value.streamInfoStack[existingIndex]
-                setState { state ->
-                    val newStack = state.streamInfoStack.toMutableList().apply {
-                        removeAt(existingIndex)
-                        add(entry)
-                    }
-                    state.copy(
-                        streamInfoStack = newStack,
-                        common = state.common.copy(isLoading = false, error = null)
-                    )
-                }
+            if (bringExistingEntryToTop(url)) {
                 return@launch
             }
 
-            val resolvedServiceId = serviceId ?: DatabaseOperations.getStreamByUrl(url)?.service_id?.toInt()
+            val resolvedServiceId = serviceId ?: DatabaseOperations.getStreamByUrl(url)?.service_id
             if (!shouldDisableLoading) {
                 setState {
                     it.copy(common = it.common.copy(isLoading = true, error = null))
@@ -78,6 +85,9 @@ class VideoDetailViewModel()
 
             if (result.fatalError == null) {
                 val newStreamInfo = (result.info as? StreamInfo)!!
+                if (bringExistingEntryToTop(newStreamInfo.url)) {
+                    return@launch
+                }
                 val newEntry = VideoDetailEntry(newStreamInfo)
                 setState {
                     it.copy(
