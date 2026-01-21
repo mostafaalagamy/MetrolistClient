@@ -33,6 +33,8 @@ import androidx.navigation.compose.rememberNavController
 import com.google.android.material.navigation.NavigationView
 import dev.icerock.moko.resources.compose.stringResource
 import dev.icerock.moko.resources.desc.desc
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import project.pipepipe.app.helper.ExternalUrlPatternHelper
 import project.pipepipe.app.helper.SponsorBlockHelper
@@ -58,6 +60,7 @@ class MainActivity : ComponentActivity() {
     private var wasInPipMode = false
     private lateinit var drawerLayout: DrawerLayout
     private var openPlayQueueFromIntent = false
+    private var minimizeOnExitKeyListener: com.russhwolf.settings.SettingsListener? = null
 
     companion object {
         private const val REQUEST_NOTIFICATION_PERMISSION = 1001
@@ -93,6 +96,8 @@ class MainActivity : ComponentActivity() {
         )
         SharedContext.platformRouteHandler = AndroidRouteHandler()
         SharedContext.platformMenuItems = AndroidMenuItems()
+
+        setupMinimizeOnExitListener()
 
 
         composeView.setContent {
@@ -455,6 +460,61 @@ class MainActivity : ComponentActivity() {
         return enterPictureInPictureMode(params)
     }
 
+    private fun updatePipAutoEnter(isEnabled: Boolean) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val params = PictureInPictureParams.Builder()
+                .setAutoEnterEnabled(isEnabled)
+                .setAspectRatio(Rational(16, 9))
+                .build()
+            setPictureInPictureParams(params)
+        }
+    }
+
+    private fun setupMinimizeOnExitListener() {
+        minimizeOnExitKeyListener = SharedContext.settingsManager.addStringListener(
+            key = "minimize_on_exit_key",
+            defaultValue = "minimize_on_exit_none_key",
+            callback = { _ -> updatePipAutoEnterBasedOnConditions() }
+        )
+
+        // Listen for pageState changes
+        lifecycleScope.launch {
+            SharedContext.sharedVideoDetailViewModel.uiState.collect { _ ->
+                updatePipAutoEnterBasedOnConditions()
+            }
+        }
+
+        // Listen for isPlaying changes
+        lifecycleScope.launch {
+            while (SharedContext.platformMediaController == null) {
+                delay(100) // safe, only delay 200-300ms at beginning once in the app lifecycle
+            }
+            SharedContext.platformMediaController?.isPlaying?.collect { _ ->
+                updatePipAutoEnterBasedOnConditions()
+            }
+        }
+
+        // Initial update
+        updatePipAutoEnterBasedOnConditions()
+    }
+
+    private fun updatePipAutoEnterBasedOnConditions() {
+        val minimizeSetting = SharedContext.settingsManager.getString(
+            "minimize_on_exit_key",
+            "minimize_on_exit_none_key"
+        )
+        val shouldEnable = minimizeSetting == "minimize_on_exit_popup_key"
+
+        val pageState = SharedContext.sharedVideoDetailViewModel.uiState.value.pageState
+        val isCorrectPageState = pageState == VideoDetailPageState.DETAIL_PAGE ||
+                pageState == VideoDetailPageState.FULLSCREEN_PLAYER
+
+        val isPlaying = SharedContext.platformMediaController?.isPlaying?.value == true
+
+        // Only enable if all three conditions are satisfied
+        updatePipAutoEnter(shouldEnable && isCorrectPageState && isPlaying)
+    }
+
     private fun handleExitPip() {
         SharedContext.exitPipMode()
         val currentMediaId = SharedContext.platformMediaController?.currentMediaItem?.value?.mediaId
@@ -482,11 +542,30 @@ class MainActivity : ComponentActivity() {
 
     override fun onStop() {
         super.onStop()
-        // If in PiP mode and Activity is stopping, user closed the PiP window
+
         if (wasInPipMode && isInPictureInPictureMode) {
             SharedContext.platformMediaController?.pause()
             handleExitPip()
             wasInPipMode = false
+        }
+
+        val uiState = SharedContext.sharedVideoDetailViewModel.uiState.value
+        val pageState = uiState.pageState
+
+        if ((pageState == VideoDetailPageState.DETAIL_PAGE || pageState == VideoDetailPageState.FULLSCREEN_PLAYER)
+            && SharedContext.platformMediaController?.isPlaying?.value == true
+        ) {
+            val minimizeSetting =
+                SharedContext.settingsManager.getString("minimize_on_exit_key", "minimize_on_exit_none_key")
+
+            when (minimizeSetting) {
+                "minimize_on_exit_background_key" -> {
+                    SharedContext.updatePlaybackMode(PlaybackMode.AUDIO_ONLY)
+                }
+                "minimize_on_exit_none_key" -> {
+                    SharedContext.platformMediaController?.pause()
+                }
+            }
         }
     }
 
@@ -510,37 +589,31 @@ class MainActivity : ComponentActivity() {
 
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) return
 
         val uiState = SharedContext.sharedVideoDetailViewModel.uiState.value
         val pageState = uiState.pageState
 
-        // Only trigger when in DETAIL_PAGE or FULLSCREEN_PLAYER and player is playing
         if ((pageState == VideoDetailPageState.DETAIL_PAGE || pageState == VideoDetailPageState.FULLSCREEN_PLAYER)
             && SharedContext.platformMediaController?.isPlaying?.value == true
         ) {
-
             val minimizeSetting =
                 SharedContext.settingsManager.getString("minimize_on_exit_key", "minimize_on_exit_none_key")
             val streamInfo = uiState.currentStreamInfo
 
             when (minimizeSetting) {
-                "minimize_on_exit_background_key" -> {
-                    // Minimize to background player
-                    SharedContext.updatePlaybackMode(PlaybackMode.AUDIO_ONLY)
-                }
-
                 "minimize_on_exit_popup_key" -> {
-                    // Minimize to popup player (PiP)
                     if (streamInfo != null) {
                         SharedContext.platformActions.enterPictureInPicture(streamInfo)
                     }
                 }
-
-                "minimize_on_exit_none_key" -> {
-                    SharedContext.platformMediaController?.pause()
-                }
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        minimizeOnExitKeyListener?.deactivate()
     }
 
     // Note: onDestroy no longer needs to release controllerFuture because
