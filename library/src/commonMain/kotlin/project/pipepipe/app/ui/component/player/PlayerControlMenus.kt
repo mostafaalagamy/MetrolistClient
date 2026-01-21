@@ -157,29 +157,6 @@ fun MoreMenu(
                 }
             )
 
-            // Play Queue
-            DropdownMenuItem(
-                modifier = Modifier.height(44.dp),
-                text = {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.QueueMusic,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Text(stringResource(MR.strings.play_queue))
-                    }
-                },
-                onClick = {
-                    SharedContext.toggleShowPlayQueueVisibility()
-                    onMenuChange(false)
-                }
-            )
-
             // Danmaku toggle
             streamInfo.danmakuUrl?.let {
                 DropdownMenuItem(

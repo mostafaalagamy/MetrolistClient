@@ -330,7 +330,7 @@ fun PlayerControl(
                         // Right side buttons
                         Row(
                             verticalAlignment = Alignment.Top,
-                            horizontalArrangement = Arrangement.spacedBy((-6).dp)
+                            horizontalArrangement = Arrangement.spacedBy((-10).dp)
                         ) {
                             // Resolution button
                             if (state.availableResolutions.isNotEmpty()) {
@@ -353,6 +353,20 @@ fun PlayerControl(
                                     color = Color.White,
                                     fontWeight = FontWeight.Bold
                                 )
+                            }
+
+                            if (state.timelineSize > 1) {
+                                IconButton(
+                                    onClick = { SharedContext.toggleShowPlayQueueVisibility() },
+                                    modifier = Modifier.focusedTVBackground()
+                                ) {
+                                    Icon(
+                                        Icons.Default.List,
+                                        contentDescription = stringResource(MR.strings.play_queue),
+                                        tint = Color.White,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
                             }
 
                             // More menu
