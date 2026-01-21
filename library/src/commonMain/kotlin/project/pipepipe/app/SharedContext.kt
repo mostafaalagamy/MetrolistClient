@@ -60,8 +60,6 @@ object SharedContext {
 //    Safe in single-activity architecture where Activity lifecycle matches application lifecycle
     lateinit var navController: NavHostController
 
-    var playingVideoUrlBeforeMinimizing: String? = null
-
     // SponsorBlockManager for SponsorBlock segment detection and skipping
    lateinit var sponsorBlockManager: SponsorBlockManager
 

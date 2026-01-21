@@ -167,11 +167,6 @@ class VideoDetailViewModel()
         setState { it.copy(pageState = VideoDetailPageState.BOTTOM_PLAYER) }
         val controller = SharedContext.platformMediaController
         val streamInfo = uiState.value.currentStreamInfo
-        if (SharedContext.playbackMode.value == PlaybackMode.VIDEO_AUDIO
-            && controller?.currentMediaItem?.value?.mediaId == streamInfo?.url && controller?.isPlaying?.value == true) {
-            SharedContext.playingVideoUrlBeforeMinimizing = streamInfo?.url
-        }
-        SharedContext.updatePlaybackMode(PlaybackMode.AUDIO_ONLY)
         if (streamInfo != null && controller != null &&
             (SharedContext.queueManager.mediaItemCount.value == 0 ||
                     (SharedContext.queueManager.mediaItemCount.value in listOf(1,2) && controller.playbackState.value == PlaybackState.IDLE))) {

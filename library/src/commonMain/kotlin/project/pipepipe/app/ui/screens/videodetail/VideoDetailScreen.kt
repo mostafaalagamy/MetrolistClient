@@ -132,42 +132,26 @@ fun VideoDetailScreen(modifier: Modifier, navController: NavHostController) {
     var hasAutoPlayed by remember { mutableStateOf(false) }
 
     LaunchedEffect(streamInfo, uiState.pageState) {
-        if (streamInfo != null && uiState.pageState == VideoDetailPageState.DETAIL_PAGE && !uiState.common.isLoading
-        ) {
-            // Check if this video was playing before minimizing
-            val wasPlayingBeforeMinimizing = SharedContext.playingVideoUrlBeforeMinimizing == streamInfo.url
-            SharedContext.playingVideoUrlBeforeMinimizing = null // Clear the flag
-            if (wasPlayingBeforeMinimizing) {
-                // Resume video playback
-                kotlinx.coroutines.delay(500) // don't use a small value, this will interfere the animation
+        if (streamInfo != null && uiState.pageState == VideoDetailPageState.DETAIL_PAGE && !uiState.common.isLoading && !hasAutoPlayed) {
+            val autoplaySetting = SharedContext.settingsManager.getString("autoplay_key", "autoplay_never_key")
+
+            val shouldAutoPlay = when (autoplaySetting) {
+                "autoplay_always_key" -> true
+                "autoplay_wifi_key" -> NetworkStateHelper.isWifiConnected()
+                "autoplay_never_key" -> false
+                else -> NetworkStateHelper.isWifiConnected() // default to WiFi only
+            }
+
+            if (shouldAutoPlay) {
                 controller?.let {
                     SharedContext.updatePlaybackMode(PlaybackMode.VIDEO_AUDIO)
-                    if (controller.currentMediaItem.value?.mediaId == streamInfo.url && controller.isPlaying.value) {
+                    if (controller.currentMediaItem.value?.mediaId != streamInfo.url) {
                         controller.playFromStreamInfo(streamInfo)
+                    } else if (!controller.isPlaying.value) {
+                        controller.play()
                     }
                 }
-            } else if (!hasAutoPlayed) {
-                // Original autoplay logic
-                val autoplaySetting = SharedContext.settingsManager.getString("autoplay_key", "autoplay_never_key")
-
-                val shouldAutoPlay = when (autoplaySetting) {
-                    "autoplay_always_key" -> true
-                    "autoplay_wifi_key" -> NetworkStateHelper.isWifiConnected()
-                    "autoplay_never_key" -> false
-                    else -> NetworkStateHelper.isWifiConnected() // default to WiFi only
-                }
-
-                if (shouldAutoPlay) {
-                    controller?.let {
-                        SharedContext.updatePlaybackMode(PlaybackMode.VIDEO_AUDIO)
-                        if (controller.currentMediaItem.value?.mediaId != streamInfo.url) {
-                            controller.playFromStreamInfo(streamInfo)
-                        } else if (!controller.isPlaying.value) {
-                            controller.play()
-                        }
-                    }
-                    hasAutoPlayed = true
-                }
+                hasAutoPlayed = true
             }
         }
     }
@@ -441,7 +425,6 @@ fun VideoDetailScreen(modifier: Modifier, navController: NavHostController) {
                         modifier = modifier
                             .fillMaxSize()
                             .background(MaterialTheme.colorScheme.background)
-                            .alpha(1 - bottomPlayerAlpha)
                     ) {
                         if (uiState.common.error != null) {
                             // Error state: show only ErrorComponent
@@ -608,6 +591,14 @@ fun VideoDetailScreen(modifier: Modifier, navController: NavHostController) {
                             }
                         }
                     }
+                    if (bottomPlayerAlpha in 0f..<1f) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.background.copy(alpha = bottomPlayerAlpha))
+                        )
+                    }
+
                     if (bottomPlayerAlpha > 0){
                         Box(
                             modifier = Modifier
