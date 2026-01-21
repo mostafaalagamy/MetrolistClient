@@ -3,6 +3,7 @@ package project.pipepipe.app.ui.screens.videodetail
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -51,21 +52,43 @@ fun DescriptionSection(
                     )
                 )
 
-                // Thumbnail button
-                streamInfo.thumbnailUrl?.let { thumbnailUrl ->
-                    IconButton(
-                        onClick = {
-                            SharedContext.showImageViewer(listOf(thumbnailUrl), 0)
-                        },
-                        modifier = Modifier
-                            .scale(0.8f)
-                            .offset(y = (-1).dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Image,
-                            contentDescription = stringResource(MR.strings.thumbnail),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    // Copy description button
+                    streamInfo.description?.let { description ->
+                        if (description.content?.isNotEmpty() == true) {
+                            IconButton(
+                                onClick = {
+                                    SharedContext.platformActions.copyToClipboard(description.content!!)
+                                },
+                                modifier = Modifier
+                                    .scale(0.8f)
+                                    .offset(y = (-1).dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.ContentCopy,
+                                    contentDescription = stringResource(MR.strings.copy),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    }
+
+                    // Thumbnail button
+                    streamInfo.thumbnailUrl?.let { thumbnailUrl ->
+                        IconButton(
+                            onClick = {
+                                SharedContext.showImageViewer(listOf(thumbnailUrl), 0)
+                            },
+                            modifier = Modifier
+                                .scale(0.8f)
+                                .offset(y = (-1).dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Image,
+                                contentDescription = stringResource(MR.strings.thumbnail),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
                 }
             }
