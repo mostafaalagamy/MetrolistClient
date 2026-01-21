@@ -2,12 +2,14 @@ package project.pipepipe.app.viewmodel
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import project.pipepipe.app.PlaybackMode
 import project.pipepipe.app.SharedContext
 import project.pipepipe.app.database.DatabaseOperations
+import project.pipepipe.app.database.DatabaseOperations.withProgress
 import project.pipepipe.app.helper.FilterHelper
 import project.pipepipe.app.helper.ToastManager
 import project.pipepipe.app.helper.executeJobFlow
@@ -453,7 +455,7 @@ class VideoDetailViewModel()
                         error = null
                     ),
                     list = entry.cachedRelatedItems.list.copy(
-                        itemList = (result.info as? RelatedItemInfo)?.partitions?: filteredItems,
+                        itemList = (result.info as? RelatedItemInfo)?.partitions?.withProgress()?: filteredItems.withProgress(),
                         nextPageUrl = result.pagedData?.nextPageUrl,
                         firstVisibleItemIndex = 0,
                         firstVisibleItemScrollOffset = 0
