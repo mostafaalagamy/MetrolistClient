@@ -4,10 +4,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -22,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -52,6 +56,7 @@ fun SpeedPitchDialog(
 
     val initialSpeed = remember { playbackSpeed }
     val initialPitch = remember { playbackPitch }
+    val initialSkipSilence = remember { SharedContext.settingsManager.getBoolean("playback_skip_silence_key", false) }
 
     fun speedToSlider(speed: Float): Float {
         return if (speed < 1f) (speed - 0.1f) / 1.8f else 0.5f + (speed - 1f) / 18f
@@ -188,18 +193,35 @@ fun SpeedPitchDialog(
                         )
                     }
                 }
-
+                // Skip Silence
+                val skipSilence = remember { mutableStateOf(SharedContext.settingsManager.getBoolean("playback_skip_silence_key", false)) }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp, start = 2.dp)
+                ) {
+                    Checkbox(
+                        checked = skipSilence.value,
+                        onCheckedChange = {
+                            skipSilence.value = it
+                            SharedContext.settingsManager.putBoolean("playback_skip_silence_key", skipSilence.value)
+                        },
+                    )
+                    Spacer(modifier = Modifier.size(16.dp))
+                    Text(stringResource(MR.strings.skip_silence_checkbox), fontSize = 14.sp)
+                }
                 // Bottom buttons
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 8.dp),
+                        .padding(bottom = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     TextButton(
                         onClick = {
                             tempSpeed = 1.0f
                             tempPitch = 1.0f
+                            skipSilence.value = false
+                            SharedContext.settingsManager.putBoolean("playback_skip_silence_key", false)
                             onApply(tempSpeed, tempPitch)
                         }
                     ) {
@@ -209,6 +231,8 @@ fun SpeedPitchDialog(
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         TextButton(
                             onClick = {
+                                skipSilence.value = initialSkipSilence
+                                SharedContext.settingsManager.putBoolean("playback_skip_silence_key", initialSkipSilence)
                                 onApply(initialSpeed, initialPitch)
                                 onDismiss()
                             }

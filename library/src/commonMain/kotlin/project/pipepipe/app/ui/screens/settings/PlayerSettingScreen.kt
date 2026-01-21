@@ -189,12 +189,6 @@ fun PlayerSettingScreen(
             }
         ),
         PreferenceItem.SwitchPref(
-            key = "playback_skip_silence_key",
-            title = stringResource(MR.strings.playback_skip_silence_title),
-            summary = stringResource(MR.strings.playback_skip_silence_summary),
-            defaultValue = false
-        ),
-        PreferenceItem.SwitchPref(
             key = "start_main_player_fullscreen_key",
             title = stringResource(MR.strings.start_main_player_fullscreen_title),
             summary = stringResource(MR.strings.start_main_player_fullscreen_summary),
