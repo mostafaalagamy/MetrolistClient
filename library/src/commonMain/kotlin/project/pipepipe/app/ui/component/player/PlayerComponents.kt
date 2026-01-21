@@ -123,7 +123,7 @@ fun VideoProgressBar(
     onDraggingChange: (Boolean) -> Unit = {}
 ) {
     val context = LocalPlatformContext.current
-
+    // todo: bad perf when playing large video
     var isDragging by remember { mutableStateOf(false) }
     var dragPosition by remember { mutableLongStateOf(0L) }
     var dragOffsetX by remember { mutableFloatStateOf(0f) }
