@@ -137,7 +137,9 @@ class PlaylistDetailViewModel : BaseViewModel<PlaylistUiState>(PlaylistUiState()
                             name = name
                         ),
                         list = state.list.copy(itemList = itemsWithNewFlag),
-                        displayItems = itemsWithNewFlag,
+                        displayItems = if (SharedContext.settingsManager.getBoolean("feed_show_played_items_key", true)) itemsWithNewFlag else {
+                            itemsWithNewFlag.filter { it.progress == null || it.duration == null || (it.duration!! > it.progress!! / 1000) }
+                        },
                         previousItemUrls = itemsWithNewFlag.map { it.url }.toSet()
                     )
                 }

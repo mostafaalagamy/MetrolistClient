@@ -179,6 +179,31 @@ fun PlaylistMoreMenu(
 
                 PlaylistType.FEED -> {
                     val feedId = playlistInfo?.url?.substringAfterLast("/")?.substringBefore("?")?.toLongOrNull()
+                    val showPlayedItems = remember { mutableStateOf(SharedContext.settingsManager.getBoolean("feed_show_played_items_key", true)) }
+
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                if (!showPlayedItems.value) {
+                                    stringResource(MR.strings.show_played_items)
+                                } else {
+                                    stringResource(MR.strings.hide_played_items)
+                                }
+                            )
+                        },
+                        onClick = {
+                            showMoreMenu = false
+                            showPlayedItems.value = !showPlayedItems.value
+                            SharedContext.settingsManager.putBoolean("feed_show_played_items_key", showPlayedItems.value)
+                            onReloadPlaylist()
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = if (!showPlayedItems.value) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                contentDescription = null
+                            )
+                        }
+                    )
 
                     if (feedId != null && feedId != -1L) {
                         DropdownMenuItem(
