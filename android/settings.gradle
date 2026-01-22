@@ -31,6 +31,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven { url 'https://jitpack.io' }
     }
 }
 
@@ -39,5 +40,6 @@ rootProject.name = 'android'
 include ':library'
 project(':library').projectDir = file('../library')
 
-includeBuild '../../shared'
-includeBuild '../../extractor'
+// Use JitPack dependencies instead of local includeBuild
+// includeBuild '../../shared'
+// includeBuild '../../extractor'

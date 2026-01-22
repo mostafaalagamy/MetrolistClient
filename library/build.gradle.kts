@@ -17,7 +17,11 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
     id("app.cash.sqldelight")
     id("dev.icerock.mobile.multiplatform-resources")
+    id("maven-publish")
 }
+
+version = "1.0.0"
+group = "com.github.mostafaalagamy"
 
 android {
     namespace = "project.pipepipe.app"
@@ -40,13 +44,14 @@ android {
 kotlin {
     jvmToolchain(24)
     androidTarget {
-
+        publishLibraryVariants("release")
     }
     sourceSets {
         commonMain {
             dependencies {
-                implementation("project.pipepipe:shared")
-                implementation("project.pipepipe:extractor")
+                // Use JitPack dependencies instead of local
+                implementation("com.github.mostafaalagamy.MetrolistShared:shared-jvm:3008573")
+                implementation("com.github.mostafaalagamy:MetroExtractor:6fd9472")
 
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
                 implementation("io.ktor:ktor-client-core:3.2.3")
